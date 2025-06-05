@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám phá Các loại Dịch Cơ thể</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A hub-and-spoke model. The main page (hub) is a grid of 12 clickable cards, one for each body fluid, for intuitive navigation. Clicking a card dynamically loads a detailed view (spoke) on the same page. This detail view uses tabs for 'Characteristics & Composition' and 'Pathological Changes' to organize complex information logically. This structure promotes user-driven exploration and prevents information overload, enhancing usability compared to a linear document. -->
+    <!-- Visualization & Content Choices: Blood composition is shown with a donut chart (Chart.js) for part-to-whole comparison. Pathological changes are presented in structured cards with Unicode icons (↑/↓) for quick recognition of increases/decreases, improving scannability. All interactions (card clicks, tab switching) are handled by vanilla JS to dynamically update content, ensuring a seamless single-page experience. These choices are designed to make complex biochemical data accessible and engaging. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .nav-tab {
+            transition: color 0.2s, border-bottom-color 0.2s;
+        }
+        .nav-tab.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app" class="container mx-auto p-4 md:p-8">
+        
+        <header id="main-header" class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Hóa sinh các Dịch trong Cơ thể</h1>
+            <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Một công cụ tương tác để khám phá đặc điểm, thành phần và các thay đổi bệnh lý của 12 loại dịch cơ thể quan trọng.</p>
+        </header>
+
+        <main id="fluid-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        </main>
+
+        <section id="detail-view" class="hidden">
+        </section>
+
+    </div>
+
+    <script>
+        const fluidData = {
+            mau: {
+                name: "Máu",
+                icon: "🩸",
+                description: "Môi trường nội môi quan trọng, thực hiện nhiều chức năng sống còn.",
+                details: {
+                    composition: {
+                        intro: "Máu bao gồm hai thành phần chính: huyết tương và các tế bào máu (huyết cầu). Huyết tương chiếm phần lớn thể tích và chủ yếu là nước, trong khi huyết cầu đảm nhiệm các chức năng chuyên biệt.",
+                        components: [
+                            { name: "Chức năng", value: "Dinh dưỡng, bài tiết, hô hấp, điều hòa, bảo vệ, vận chuyển." },
+                            { name: "Thể tích", value: "4-5 lít (1/13 trọng lượng cơ thể)." },
+                            { name: "pH", value: "7,30 - 7,42" },
+                            { name: "Độ nhớt", value: "Gấp 4-5 lần nước." },
+                        ],
+                        plasma: [
+                            { name: "Protein", value: "60-80 g/l (Albumin, Globulin, Fibrinogen...)" },
+                            { name: "Lipid", value: "4-7 g/l" },
+                            { name: "Cholesterol", value: "1.5-2.6 g/l" },
+                            { name: "Glucose", value: "Tham khảo giá trị trong máu" },
+                            { name: "Chất vô cơ", value: "Na+, K+, Ca2+, Cl-, HCO3-..." },
+                        ],
+                        cells: [
+                            { name: "Hồng cầu", value: "Vận chuyển O2, CO2; điều hòa pH." },
+                            { name: "Bạch cầu", value: "Miễn dịch, bảo vệ cơ thể." },
+                            { name: "Tiểu cầu", value: "Đông máu." },
+                        ],
+                        charts: [
+                            {
+                                type: 'doughnut',
+                                target: 'blood-composition-chart',
+                                title: 'Thành phần cấu tạo của Máu',
+                                data: {
+                                    labels: ['Huyết tương (55-60%)', 'Huyết cầu (40-45%)'],
+                                    datasets: [{
+                                        data: [57.5, 42.5],
+                                        backgroundColor: ['#3B82F6', '#F87171'],
+                                    }]
+                                }
+                            },
+                            {
+                                type: 'bar',
+                                target: 'plasma-protein-chart',
+                                title: 'Các loại Protein chính trong Huyết tương',
+                                data: {
+                                    labels: ['Albumin', 'Globulin', 'Fibrinogen'],
+                                    datasets: [{
+                                        label: 'Nồng độ (tương đối)',
+                                        data: [56.6, 38.4, 5],
+                                        backgroundColor: ['#60A5FA', '#FBBF24', '#A78BFA'],
+                                    }]
+                                }
+                            }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Thành phần hóa học của máu thay đổi đáng kể trong nhiều tình trạng bệnh lý, đặc biệt là khi chức năng của các cơ quan như gan, thận bị rối loạn. Do đó, xét nghiệm máu là công cụ chẩn đoán, theo dõi và tiên lượng bệnh cực kỳ quan trọng.",
+                        conditions: [
+                            { name: "Độ nhớt", change: "Giảm trong thiếu máu. Tăng trong bệnh đa hồng cầu.", icon: "↕️" },
+                            { name: "Albumin", change: "Giảm khi suy dinh dưỡng, bệnh gan, hội chứng thận hư.", icon: "↓" },
+                            { name: "Tỷ lệ A/G", change: "Giảm trong xơ gan, viêm thận, các bệnh nhiễm trùng.", icon: "↓" },
+                            { name: "Enzyme (GOT, GPT)", change: "Tăng mạnh trong tổn thương gan (viêm gan).", icon: "↑" },
+                            { name: "Ure, Creatinin", change: "Tăng trong suy thận.", icon: "↑" },
+                        ]
+                    }
+                }
+            },
+            dich_nao_tuy: {
+                name: "Dịch Não Tủy",
+                icon: "�",
+                description: "Dịch trong suốt bao quanh não và tủy sống, có vai trò bảo vệ và dinh dưỡng.",
+                 details: {
+                    composition: {
+                        intro: "Dịch não tủy (DNT) được tạo ra từ quá trình lọc huyết tương. Thành phần của nó phản ánh trạng thái của hệ thần kinh trung ương.",
+                        components: [
+                            { name: "Thể tích", value: "100-150 ml" },
+                            { name: "Tỉ trọng", value: "1.003 - 1.008" },
+                            { name: "Áp lực", value: "80-180 mmH2O" },
+                            { name: "Protein", value: "Rất thấp (20-25 mg%), A/G = 3/1" },
+                            { name: "Glucose", value: "45-65 mg% (bằng ~2/3 glucose máu)" },
+                            { name: "Clo", value: "Cao hơn huyết thanh (120-130 mEq/l)" },
+                            { name: "Lipid", value: "Hầu như không có" }
+                        ],
+                    },
+                    pathology: {
+                        intro: "Xét nghiệm DNT là một xét nghiệm quan trọng trong chẩn đoán các bệnh lý thần kinh. Sự thay đổi các thành phần trong DNT cung cấp thông tin quý giá cho bác sĩ.",
+                        conditions: [
+                           { name: "Protein", change: "Tăng trong viêm màng não, u não, chèn ép tủy.", icon: "↑" },
+                           { name: "Glucose", change: "Giảm trong viêm màng não mủ, lao màng não. Tăng trong viêm não, tiểu đường.", icon: "↕️" },
+                           { name: "Lactat", change: "Tăng > 3.5 mmol/L trong viêm màng não do vi khuẩn.", icon: "↑" },
+                           { name: "Clo", change: "Giảm trong viêm màng não, đặc biệt là lao màng não.", icon: "↓" },
+                        ]
+                    }
+                }
+            },
+            bach_huyet: {
+                name: "Bạch Huyết",
+                icon: "💧",
+                description: "Dịch lưu thông trong hệ bạch huyết, vai trò trong miễn dịch và vận chuyển lipid.",
+                details: {
+                    composition: {
+                        intro: "Bạch huyết được tạo ra từ dịch kẽ và có thành phần thay đổi tùy thuộc vào vị trí trong cơ thể.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Lọc từ huyết tương vào dịch kẽ." },
+                           { name: "Protein", value: "Thấp hơn huyết tương, thay đổi theo vùng (2-8 g%)." },
+                           { name: "Lipid", value: "Tăng cao ở ruột sau bữa ăn, làm dịch có màu trắng đục." },
+                           { name: "Điện giải", value: "Tương tự huyết tương nhưng có khác biệt nhỏ." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Sự tắc nghẽn dòng bạch huyết có thể gây ra phù bạch huyết, một tình trạng tích tụ dịch trong các mô mềm.",
+                        conditions: [
+                            { name: "Phù bạch huyết", change: "Tắc nghẽn mạch bạch huyết gây sưng, thường ở tay hoặc chân.", icon: "⚠️" }
+                        ]
+                    }
+                }
+            },
+            dich_khop: {
+                name: "Dịch Khớp",
+                icon: "🦴",
+                description: "Dịch nhớt bôi trơn các khớp xương, giảm ma sát và nuôi dưỡng sụn khớp.",
+                details: {
+                    composition: {
+                        intro: "Dịch khớp là một siêu lọc của huyết tương, được làm giàu thêm bởi acid hyaluronic do các tế bào hoạt dịch tiết ra.",
+                        components: [
+                           { name: "Tính chất", value: "Rất nhớt do nồng độ cao acid hyaluronic (2-3 g/l)." },
+                           { name: "Protein", value: "Bình thường khoảng 18-25 g/l." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Phân tích dịch khớp giúp chẩn đoán nguyên nhân gây viêm khớp hoặc tràn dịch khớp.",
+                        conditions: [
+                           { name: "Protein", change: "Có thể tăng tới 40 g/l trong các trường hợp tràn dịch khớp do viêm.", icon: "↑" },
+                           { name: "Độ nhớt", change: "Giảm trong viêm khớp do enzyme phân hủy acid hyaluronic.", icon: "↓" }
+                        ]
+                    }
+                }
+            },
+            sua: {
+                name: "Sữa",
+                icon: "🥛",
+                description: "Nguồn dinh dưỡng hoàn hảo cho trẻ sơ sinh, thay đổi thành phần theo loài.",
+                details: {
+                    composition: {
+                        intro: "Sữa là một chất lỏng phức tạp cung cấp đầy đủ dinh dưỡng cho sự phát triển của trẻ sơ sinh. Thành phần của sữa thay đổi tùy theo loài và giai đoạn tiết sữa.",
+                        components: [
+                           { name: "Tính chất", value: "Màu trắng đục, mùi vị đặc trưng. pH hơi acid (6.56-6.95)." },
+                           { name: "Protein", value: "Casein, lactoalbumin, lactoglobulin. Sữa người ít protein hơn sữa bò." },
+                           { name: "Lipid", value: "Chủ yếu là Triglyceride, nhiều acid béo không no." },
+                           { name: "Glucid", value: "Chủ yếu là Lactose (lượng cao ở sữa người)." },
+                           { name: "Chất khoáng", value: "Nhiều Ca, K, Phospho; ít sắt." },
+                           { name: "Vitamin & Enzyme", value: "Chứa tất cả các vitamin (ít Vit D, C) và nhiều enzyme." },
+                           { name: "Sữa non", value: "Giàu kháng thể (Ig) bảo vệ trẻ sơ sinh." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Thay đổi về thành phần sữa có thể liên quan đến tình trạng sức khỏe của người mẹ hoặc dinh dưỡng, nhưng không phải là dịch bệnh lý theo nghĩa truyền thống."
+                    }
+                }
+            },
+            nuoc_bot: {
+                name: "Nước Bọt",
+                icon: "😋",
+                description: "Làm ẩm miệng, bắt đầu quá trình tiêu hóa tinh bột, và bảo vệ răng.",
+                details: {
+                    composition: {
+                        intro: "Nước bọt được tiết ra từ ba cặp tuyến nước bọt chính và có vai trò quan trọng trong tiêu hóa và bảo vệ khoang miệng.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Tuyến mang tai, dưới hàm, dưới lưỡi." },
+                           { name: "Thể tích", value: "0.8-1 lít/ngày." },
+                           { name: "Thành phần chính", value: "99.4-99.5% nước, 0.5-0.6% chất khô." },
+                           { name: "Enzyme", value: "Amylase (tiêu hóa tinh bột), Maltase, Lysozyme (kháng khuẩn)." },
+                           { name: "Khác", value: "Mucin (glucoprotein, tạo độ nhớt), Urea." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Sự thay đổi về lượng và chất của nước bọt có thể là dấu hiệu của một số bệnh lý hoặc tình trạng sức khỏe.",
+                        conditions: [
+                            { name: "Khô miệng", change: "Giảm tiết nước bọt do bệnh (ví dụ: hội chứng Sjögren), thuốc, hoặc xạ trị.", icon: "↓" },
+                            { name: "Thay đổi pH", change: "Ảnh hưởng đến sức khỏe răng miệng, tăng nguy cơ sâu răng.", icon: "⚠️" }
+                        ]
+                    }
+                }
+            },
+            dich_vi: {
+                name: "Dịch Vị",
+                icon: "🔥",
+                description: "Dịch acid trong dạ dày, tiêu hóa protein và tiêu diệt vi khuẩn.",
+                details: {
+                    composition: {
+                        intro: "Dịch vị là một hỗn hợp phức tạp do các tế bào tuyến dạ dày tiết ra, đóng vai trò then chốt trong quá trình tiêu hóa thức ăn.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Tế bào chính (tiết pepsinogen), tế bào viền (tiết HCl), tế bào biểu mô (tiết mucin)." },
+                           { name: "Thể tích", value: "2-3 lít/24 giờ." },
+                           { name: "pH", value: "Khoảng 1 (rất acid)." },
+                           { name: "Enzyme", value: "Pepsin (tiêu hóa protein)." },
+                           { name: "Khác", value: "Acid Hydrochloric (HCl), Mucin (chất nhầy bảo vệ dạ dày)." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Sự rối loạn tiết dịch vị có thể dẫn đến các bệnh lý đường tiêu hóa nghiêm trọng.",
+                        conditions: [
+                            { name: "Loét dạ dày", change: "Tăng tiết acid hoặc giảm yếu tố bảo vệ gây tổn thương niêm mạc.", icon: "↑" },
+                            { name: "Trào ngược dạ dày thực quản", change: "Acid dịch vị trào ngược lên thực quản gây kích ứng.", icon: "↑" }
+                        ]
+                    }
+                }
+            },
+            dich_ruot: {
+                name: "Dịch Ruột",
+                icon: "🌀",
+                description: "Dịch kiềm trong ruột non, chứa enzyme hoàn tất quá trình tiêu hóa.",
+                details: {
+                    composition: {
+                        intro: "Dịch ruột được tiết ra từ niêm mạc ruột non, nơi diễn ra phần lớn quá trình tiêu hóa và hấp thu chất dinh dưỡng.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Tế bào niêm mạc ruột non." },
+                           { name: "Thể tích", value: "1-1.3 lít/24 giờ." },
+                           { name: "Thành phần", value: "Nhiều Na+, Cl-, HCO3-." },
+                           { name: "Enzyme", value: "Enterokinase, Maltase, Aminopeptidase, Nucleosidase (tiêu hóa carbohydrate, protein, nucleic acid)." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Rối loạn chức năng tiết dịch ruột có thể ảnh hưởng nghiêm trọng đến quá trình tiêu hóa và hấp thu dinh dưỡng.",
+                        conditions: [
+                            { name: "Tiêu chảy", change: "Tăng tiết dịch hoặc giảm hấp thu dẫn đến mất nước và điện giải.", icon: "↑" },
+                            { name: "Kém hấp thu", change: "Thiếu hụt enzyme hoặc tổn thương niêm mạc ruột làm giảm hấp thu dinh dưỡng.", icon: "↓" }
+                        ]
+                    }
+                }
+            },
+            dich_tuy: {
+                name: "Dịch Tụy",
+                icon: "✨",
+                description: "Nguồn enzyme tiêu hóa quan trọng cho lipid, protein và carbohydrate.",
+                details: {
+                    composition: {
+                        intro: "Dịch tụy là một dịch tiêu hóa mạnh mẽ được tiết ra từ tụy, chứa nhiều enzyme cần thiết cho sự phân hủy chất dinh dưỡng trong ruột non.",
+                        components: [
+                           { name: "Thể tích", value: "1-2.5 lít/24 giờ." },
+                           { name: "Tính chất", value: "Trong, hơi sánh, pH kiềm (giúp trung hòa acid dịch vị)." },
+                           { name: "Thành phần", value: "Khoảng 7g chất hữu cơ và 6g chất vô cơ/lít." },
+                           { name: "Enzyme", value: "Amylase (tiêu hóa tinh bột), Lipase (tiêu hóa lipid), Trypsinogen, Chymotrypsinogen (tiền enzyme tiêu hóa protein)." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Bệnh lý tuyến tụy thường liên quan đến sự rối loạn sản xuất hoặc hoạt động của các enzyme này.",
+                        conditions: [
+                            { name: "Viêm tụy cấp", change: "Enzyme tụy bị hoạt hóa sớm trong tụy, gây tự tiêu và tổn thương mô.", icon: "↑" },
+                            { name: "Suy tụy ngoại tiết", change: "Tuyến tụy không sản xuất đủ enzyme tiêu hóa, dẫn đến kém hấp thu.", icon: "↓" }
+                        ]
+                    }
+                }
+            },
+            dich_mang: {
+                name: "Dịch Các Màng",
+                icon: "겹",
+                description: "Dịch bệnh lý (tràn dịch) xuất hiện ở màng phổi, màng bụng, màng tim.",
+                details: {
+                    composition: {
+                        intro: "Dịch các màng là dịch tích tụ bất thường trong các khoang màng (màng phổi, màng bụng, màng ngoài tim), thường là dấu hiệu của bệnh lý.",
+                        components: [
+                           { name: "Mô tả", value: "Là dịch bệnh lý được tiết ra trong một số bệnh." },
+                           { name: "Phân loại", value: "Dịch thấm (transudate) và dịch tiết (exudate)." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Việc phân tích dịch các màng là quan trọng để chẩn đoán nguyên nhân gây tràn dịch.",
+                        conditions: [
+                            { name: "Dịch thấm (Transudate)", change: "Do mất cân bằng áp lực (VD: suy tim, xơ gan), ít protein và tế bào.", icon: "⚠️" },
+                            { name: "Dịch tiết (Exudate)", change: "Do viêm nhiễm (VD: viêm phổi, lao), giàu protein và tế bào.", icon: "⬆️" }
+                        ]
+                    }
+                }
+            },
+            nuoc_tieu: {
+                name: "Nước Tiểu",
+                icon: "🚽",
+                description: "Sản phẩm bài tiết của thận, chứa các chất thải của cơ thể hòa tan trong nước.",
+                details: {
+                    composition: {
+                        intro: "Nước tiểu là chất lỏng được tạo ra bởi thận, đóng vai trò quan trọng trong việc loại bỏ các chất thải và duy trì cân bằng nội môi của cơ thể.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Quá trình lọc máu ở cầu thận và tái hấp thu, bài tiết ở ống thận." },
+                           { name: "Thể tích", value: "Khoảng 1-2 lít/ngày (người trưởng thành)." },
+                           { name: "pH", value: "Thay đổi từ 4.5-8.0 (trung bình 6.0)." },
+                           { name: "Thành phần", value: "Chủ yếu là nước (95%), urea, creatinin, acid uric, muối vô cơ (Na+, K+, Cl-), phosphat, sulfat, và các chất thải khác." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Phân tích nước tiểu là một xét nghiệm quan trọng để đánh giá chức năng thận và phát hiện nhiều bệnh lý.",
+                        conditions: [
+                            { name: "Protein niệu", change: "Protein xuất hiện trong nước tiểu, dấu hiệu tổn thương thận.", icon: "↑" },
+                            { name: "Glucose niệu", change: "Glucose xuất hiện trong nước tiểu, thường gặp ở bệnh tiểu đường.", icon: "↑" },
+                            { name: "Hồng cầu niệu", change: "Hồng cầu trong nước tiểu, có thể do viêm cầu thận, sỏi thận.", icon: "↑" },
+                            { name: "Bạch cầu niệu", change: "Bạch cầu trong nước tiểu, dấu hiệu nhiễm trùng đường tiết niệu.", icon: "↑" }
+                        ]
+                    }
+                }
+            },
+            mat: {
+                name: "Mật",
+                icon: "🟡",
+                description: "Dịch do gan tiết ra, giúp tiêu hóa và hấp thu chất béo.",
+                details: {
+                    composition: {
+                        intro: "Mật là một dịch tiêu hóa quan trọng do gan sản xuất và được dự trữ trong túi mật, có vai trò chính trong quá trình tiêu hóa lipid.",
+                        components: [
+                           { name: "Nguồn gốc", value: "Gan sản xuất." },
+                           { name: "Tính chất", value: "Màu vàng-xanh, pH kiềm (7.6-8.6)." },
+                           { name: "Thành phần", value: "Muối mật, bilirubin (sắc tố mật), cholesterol, phospholipid, chất điện giải và nước." },
+                           { name: "Chức năng", value: "Nhũ hóa chất béo, giúp enzyme lipase tiêu hóa; hấp thu vitamin tan trong dầu." }
+                        ]
+                    },
+                    pathology: {
+                        intro: "Rối loạn sản xuất hoặc lưu thông mật có thể dẫn đến các vấn đề về tiêu hóa và gan mật.",
+                        conditions: [
+                            { name: "Sỏi mật", change: "Sự kết tinh của cholesterol hoặc bilirubin trong túi mật hoặc đường mật.", icon: "⚠️" },
+                            { name: "Vàng da", change: "Tăng bilirubin trong máu do tắc nghẽn đường mật hoặc suy gan.", icon: "⬆️" }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const app = document.getElementById('app');
+        const fluidGrid = document.getElementById('fluid-grid');
+        const detailView = document.getElementById('detail-view');
+        const mainHeader = document.getElementById('main-header');
+        let activeCharts = [];
+
+        function renderFluidGrid() {
+            fluidGrid.innerHTML = '';
+            for (const key in fluidData) {
+                const fluid = fluidData[key];
+                const card = document.createElement('div');
+                card.className = 'card p-4 flex flex-col items-center justify-center text-center cursor-pointer';
+                card.dataset.fluidKey = key;
+                card.innerHTML = `
+                    <div class="text-5xl mb-2">${fluid.icon}</div>
+                    <h3 class="font-semibold text-gray-800">${fluid.name}</h3>
+                    <p class="text-sm text-gray-500 mt-1">${fluid.description || 'Chưa có thông tin chi tiết.'}</p>
+                `;
+                card.addEventListener('click', () => showDetailView(key));
+                fluidGrid.appendChild(card);
+            }
+        }
+
+        function showDetailView(key) {
+            const fluid = fluidData[key];
+            if (!fluid.details) {
+                alert('Thông tin chi tiết cho loại dịch này đang được cập nhật.');
+                return;
+            }
+
+            fluidGrid.classList.add('hidden');
+            mainHeader.classList.add('hidden');
+
+            detailView.innerHTML = `
+                <button id="back-btn" class="mb-6 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">← Quay lại</button>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <span class="text-5xl mr-4">${fluid.icon}</span>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">${fluid.name}</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="border-b border-gray-200">
+                        <nav id="detail-tabs" class="-mb-px flex space-x-6">
+                            <button data-tab="composition" class="nav-tab active py-3 px-1 border-b-2 font-medium text-sm border-transparent">Đặc điểm & Thành phần</button>
+                            <button data-tab="pathology" class="nav-tab py-3 px-1 border-b-2 font-medium text-sm border-transparent">Thay đổi Bệnh lý</button>
+                        </nav>
+                    </div>
+
+                    <div id="tab-content" class="mt-6">
+                    </div>
+                </div>
+            `;
+            detailView.classList.remove('hidden');
+            
+            document.getElementById('back-btn').addEventListener('click', hideDetailView);
+            document.querySelectorAll('#detail-tabs button').forEach(button => {
+                button.addEventListener('click', (e) => switchTab(e, key));
+            });
+            
+            renderTabContent('composition', key);
+        }
+
+        function hideDetailView() {
+            detailView.classList.add('hidden');
+            fluidGrid.classList.remove('hidden');
+            mainHeader.classList.remove('hidden');
+            destroyActiveCharts();
+        }
+
+        function switchTab(event, key) {
+            document.querySelectorAll('#detail-tabs button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            const tabName = event.target.dataset.tab;
+            renderTabContent(tabName, key);
+        }
+        
+        function renderTabContent(tabName, key) {
+            const tabContent = document.getElementById('tab-content');
+            const data = fluidData[key].details[tabName];
+            destroyActiveCharts();
+            tabContent.innerHTML = '';
+            
+            if (!data) {
+                tabContent.innerHTML = `<p class="text-gray-600">Không có dữ liệu cho mục này.</p>`;
+                return;
+            }
+
+            let contentHTML = `<p class="text-gray-600 mb-6">${data.intro || ''}</p>`;
+
+            if (tabName === 'composition') {
+                contentHTML += `<div class="grid md:grid-cols-2 gap-6"><div><h4 class="font-semibold text-lg mb-3 text-gray-700">Tính chất chính</h4><ul class="space-y-2">`;
+                data.components.forEach(item => {
+                    contentHTML += `<li class="flex justify-between items-start"><span class="font-medium text-gray-800">${item.name}:</span><span class="text-right text-gray-600">${item.value}</span></li>`;
+                });
+                contentHTML += `</ul></div><div class="space-y-6">`;
+                if(data.charts) {
+                    data.charts.forEach(chartInfo => {
+                        contentHTML += `<div><h4 class="font-semibold text-lg mb-2 text-center text-gray-700">${chartInfo.title}</h4><div class="chart-container"><canvas id="${chartInfo.target}"></canvas></div></div>`;
+                    });
+                }
+                contentHTML += `</div></div>`;
+            } else if (tabName === 'pathology') {
+                if (data.conditions && data.conditions.length > 0) {
+                    contentHTML += `<div class="space-y-4">`;
+                    data.conditions.forEach(item => {
+                        contentHTML += `
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 flex items-center"><span class="text-2xl mr-3">${item.icon}</span>${item.name}</h4>
+                                <p class="text-gray-600 mt-1 pl-8">${item.change}</p>
+                            </div>
+                        `;
+                    });
+                    contentHTML += `</div>`;
+                } else {
+                    contentHTML += `<p class="text-gray-600">Chưa có thông tin chi tiết về thay đổi bệnh lý cho loại dịch này.</p>`;
+                }
+            }
+
+            tabContent.innerHTML = contentHTML;
+
+            if (tabName === 'composition' && data.charts) {
+                data.charts.forEach(chartInfo => {
+                    createChart(chartInfo.target, chartInfo.type, chartInfo.data);
+                });
+            }
+        }
+        
+        function createChart(canvasId, type, data) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const newChart = new Chart(ctx, {
+                type: type,
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: type === 'doughnut' ? 'bottom' : 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                         if(type === 'doughnut') {
+                                            label += context.parsed + '%';
+                                         } else {
+                                             label += context.raw;
+                                         }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: type === 'bar' ? {
+                        y: {
+                            beginAtZero: true
+                        }
+                    } : {}
+                }
+            });
+            activeCharts.push(newChart);
+        }
+
+        function destroyActiveCharts() {
+            activeCharts.forEach(chart => chart.destroy());
+            activeCharts = [];
+        }
+
+        document.addEventListener('DOMContentLoaded', renderFluidGrid);
+    </script>
+</body>
+</html>
+�

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rối loạn Lipid Máu: Phân tích và Ý nghĩa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A hub-and-spoke model. The main page (hub) presents four clickable cards, each corresponding to a key objective from the "4 mục tiêu lipid.pdf" document. Clicking a card navigates to a detailed view (spoke) for that specific objective. This detailed view uses descriptive text, bullet points, and structured lists to present complex information clearly. This structure provides a user-driven, modular exploration path, making the dense information highly digestible and easy to navigate. -->
+    <!-- Visualization & Content Choices: The application relies on structured textual content and lists rather than charts, as the source report's information is primarily descriptive and analytical. Key points are highlighted using bold text and Unicode icons (e.g., list bullets, arrows for changes) for visual emphasis and quick scanning. All navigation and dynamic content loading are handled by vanilla JavaScript, ensuring a smooth single-page user experience. This approach ensures fidelity to the source material's nature while enhancing its presentation and navigability. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .section-card {
+            background-color: #FFFFFF;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #dbeafe; /* Light blue from Tailwind 100 */
+            font-weight: 600;
+            color: #1e40af; /* Darker blue from Tailwind 700 */
+        }
+        tr:nth-child(even) {
+            background-color: #f0f9ff; /* Very light blue */
+        }
+        tr:hover {
+            background-color: #e0f2fe; /* Lighter blue on hover */
+        }
+        .info-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .info-card-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app" class="container mx-auto p-4 md:p-8">
+        
+        <header id="main-header" class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Mục tiêu Rối loạn Lipid Máu</h1>
+            <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Khám phá thông tin chi tiết về các loại lipoprotein, chức năng protein, các kiểu rối loạn và xét nghiệm lipid máu.</p>
+        </header>
+
+        <main id="main-content" class="space-y-8">
+            <section id="lipoprotein-comparison" class="section-card p-6 cursor-pointer" data-section="lipoproteinComparison">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">1. So sánh các loại Lipoprotein máu</h2>
+                <p class="text-gray-600">Tìm hiểu về cấu tạo, tính chất và chức năng của 4 loại lipoprotein chính: Chylomicron, VLDL, LDL, HDL.</p>
+            </section>
+
+            <section id="protein-functions" class="section-card p-6 cursor-pointer" data-section="proteinFunctions">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">2. Chức năng các protein chuyển hóa Lipoprotein máu</h2>
+                <p class="text-gray-600">Phân tích vai trò của các enzyme, apolipoprotein, thụ thể và protein vận chuyển.</p>
+            </section>
+
+            <section id="disorder-types" class="section-card p-6 cursor-pointer" data-section="disorderTypes">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">3. Các kiểu Rối loạn Lipoprotein máu</h2>
+                <p class="text-gray-600">Trình bày các dạng rối loạn chuyển hóa lipid dựa trên nồng độ và cơ chế liên quan.</p>
+            </section>
+
+            <section id="lipid-tests" class="section-card p-6 cursor-pointer" data-section="lipidTests">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">4. Ý nghĩa các xét nghiệm Lipid máu</h2>
+                <p class="text-gray-600">Tìm hiểu về Cholesterol Toàn phần, Triglyceride, LDL-c và HDL-c.</p>
+            </section>
+        </main>
+
+        <section id="detail-view" class="hidden">
+        </section>
+
+    </div>
+
+    <script>
+        const appData = {
+            lipoproteinComparison: {
+                name: "So sánh các loại Lipoprotein máu",
+                intro: "Các lipoprotein máu đóng vai trò quan trọng trong việc vận chuyển lipid trong cơ thể. Dưới đây là bảng so sánh chi tiết 4 loại chính:",
+                details: [
+                    {
+                        type: "table",
+                        headers: ["Đặc điểm", "Chylomicron (CM)", "Lipoprotein tỷ trọng rất thấp (VLDL)", "Lipoprotein tỷ trọng thấp (LDL)", "Lipoprotein tỷ trọng cao (HDL)"],
+                        rows: [
+                            ["Nguồn gốc", "Ruột non (sau bữa ăn)", "Gan", "Từ VLDL sau khi mất triglyceride (qua IDL)", "Gan và ruột non"],
+                            ["Kích thước", "Lớn nhất", "Lớn", "Trung bình", "Nhỏ nhất"],
+                            ["Tỷ trọng", "Thấp nhất (do nhiều lipid, ít protein)", "Thấp", "Trung bình", "Cao nhất (do nhiều protein, ít lipid)"],
+                            ["Thành phần lipid", "Rất giàu Triglyceride (ngoại sinh), ít cholesterol", "Giàu Triglyceride (nội sinh), chứa cholesterol", "Giàu Cholesterol (chiếm phần lớn)", "Ít lipid, chứa cholesterol và phospholipid"],
+                            ["Apolipoprotein", "ApoB-48, ApoC-II, ApoE", "ApoB-100, ApoC-I, ApoC-II, ApoE", "ApoB-100", "ApoA-I, ApoA-II, ApoC-II, ApoE"],
+                            ["Tính chất", "Chỉ xuất hiện sau bữa ăn giàu mỡ, làm huyết tương đục", "Được tổng hợp liên tục ở gan, tiền chất của LDL", "Thường được gọi là \"cholesterol xấu\" do nguy cơ gây xơ vữa động mạch", "Thường được gọi là \"cholesterol tốt\" do vai trò bảo vệ tim mạch"],
+                            ["Chức năng", "Vận chuyển Triglyceride ngoại sinh (từ thức ăn) từ ruột đến các mô dự trữ (mỡ, cơ) và gan.", "Vận chuyển Triglyceride nội sinh (từ gan) đến các mô ngoại vi để sử dụng hoặc dự trữ năng lượng.", "Vận chuyển Cholesterol từ gan đến các tế bào và mô trong cơ thể (cung cấp cholesterol cho tế bào).", "Vận chuyển Cholesterol dư thừa từ các mô ngoại vi (bao gồm cả mảng xơ vữa động mạch) trở về gan để xử lý và đào thải ra khỏi cơ thể (quá trình vận chuyển cholesterol ngược)."],
+                            ["Trong chuyển hóa", "Triglyceride trong CM được thủy phân bởi Lipoprotein lipase (LPL) ở các mao mạch mô. Phần còn lại (CM tàn dư) được gan thu nhận.", "Triglyceride trong VLDL được thủy phân bởi LPL, tạo ra IDL, sau đó IDL tiếp tục chuyển hóa thành LDL hoặc được gan thu nhận.", "LDL được các tế bào thu nhận thông qua thụ thể LDL để lấy cholesterol. Nếu dư thừa, LDL có thể lắng đọng ở thành mạch, góp phần hình thành mảng xơ vữa.", "HDL nhận cholesterol từ các tế bào và các lipoprotein khác, sau đó vận chuyển về gan. HDL cũng có vai trò chống oxy hóa và chống viêm."]
+                        ]
+                    }
+                ]
+            },
+            proteinFunctions: {
+                name: "Chức năng các protein chuyển hóa Lipoprotein máu",
+                intro: "Các protein tham gia vào quá trình chuyển hóa lipoprotein máu, đóng vai trò quan trọng trong việc nhận diện và di chuyển lipid trong cơ thể.",
+                details: [
+                    {
+                        title: "1. Các Enzym đặc biệt",
+                        icon: "🧪",
+                        color: "bg-blue-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><strong>Lipoprotein lipase (LPL):</strong> Enzym quan trọng giúp thoái biến (phân giải) VLDL. Hoạt động tăng cường bởi insulin và thyroxine, hoạt hóa bởi ApoC-II và ức chế bởi ApoC-III. Khiếm khuyết hoặc giảm tổng hợp LPL làm giảm thoái biến VLDL.</li>
+                                <li><strong>Lipase gan (Hepatic lipase - HL):</strong> Enzym này giúp chuyển VLDL thành IDL và IDL thành LDL. Khi thiếu lipase gan, quá trình chuyển đổi này không thể xảy ra, dẫn đến VLDL không chuyển thành IDL, và IDL không chuyển thành LDL. Lúc này, cả HDL và LDL đều chứa đầy TG.</li>
+                                <li><strong>Cholesteryl Ester Transfer Protein (CETP):</strong> Tham gia vào sự chuyển dạng qua lại của lipid và lipoprotein. Hoạt động của CETP thường xuyên được kích hoạt bởi tình trạng tăng VLDL hoặc tăng TG, dẫn đến việc tạo ra các phân tử LDL và HDL nhỏ và đậm đặc, vốn là yếu tố nguy cơ tim mạch. Khiếm khuyết hoặc tổn thương gen mã hóa CETP có thể làm giảm lượng HDL-c nhỏ và làm chậm sự thanh thải HDL-c khỏi tuần hoàn, dẫn đến HDL-c cao đơn độc.</li>
+                                <li><strong>Lecithin:Cholesterol Acyltransferase (LCAT):</strong> Là enzym tham gia tổng hợp HDL tại gan và ruột. Khiếm khuyết LCAT gây giảm HDL-c đơn độc. Trong hội chứng thận hư, sự giảm enzym LCAT góp phần làm giảm tổng hợp HDL.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "2. Các Apolipoprotein (ApoLP)",
+                        icon: "🧬",
+                        color: "bg-green-50",
+                        content: `
+                            <p class="text-gray-700 mb-2 ml-4">Chức năng chính được nêu là nhận diện và di chuyển. Chúng giúp các lipoprotein được nhận biết bởi các thụ thể trên bề mặt tế bào và định hướng sự di chuyển của lipoprotein trong máu.</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><strong>ApoB:</strong> Là thành phần quan trọng của các lipoprotein chứa apoB như Chylomicron (ApoB-48), VLDL và LDL (ApoB-100). Khiếm khuyết trong tổng hợp hoặc chuyển hóa apoB do đột biến gen dẫn đến giảm hoặc không có các lipoprotein này trong máu (CM, VLDL, LDL), gây ra nồng độ TG và cholesterol rất thấp.</li>
+                                <li><strong>ApoA-I:</strong> Là thành phần chính của HDL. Khiếm khuyết apoA-I gây giảm tổng hợp HDL. ApoA-I trên bề mặt HDL liên kết với cổng vận chuyển ABC-A1 trên tế bào ngoại biên để thu nhận cholesterol. Khi HDL trở nên nhỏ và đậm đặc, apoA1 có thể tách rời, làm mất khả năng này.</li>
+                                <li><strong>ApoC-II:</strong> Là yếu tố hoạt hóa LPL. Khiếm khuyết ApoC-II gây tăng TG.</li>
+                                <li><strong>ApoC-III:</strong> Là yếu tố ức chế LPL. Thừa ApoC-III gây tăng TG.</li>
+                                <li><strong>ApoE:</strong> Khiếm khuyết apoE, như trong Dysbetalipoproteinemia, làm chậm sự đào thải của Chylomicron, LDL và VLDL khỏi tuần hoàn.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "3. Các Thụ thể trên bề mặt tế bào (Receptor)",
+                        icon: "�",
+                        color: "bg-yellow-50",
+                        content: `
+                            <p class="text-gray-700 mb-2 ml-4">Chức năng là nhận các phối tử (ligands) và truyền tín hiệu. Trong chuyển hóa lipoprotein, chúng nhận diện các ApoLP để giúp tế bào hấp thu lipid từ lipoprotein.</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><strong>Thụ thể LDL (LDL-R):</strong> Nhận diện LDL. Đột biến gen mã hóa LDL-receptor là nguyên nhân của tăng cholesterol gia đình, làm chậm đào thải LDL khỏi tuần hoàn. Hoạt tính của thụ thể LDL có thể bị giảm khi khiếm khuyết cholesterol 7-alpha-hydroxylase.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "4. Các Protein vận chuyển trên màng tế bào (Transporter)",
+                        icon: "🚚",
+                        color: "bg-purple-50",
+                        content: `
+                            <p class="text-gray-700 mb-2 ml-4">Là các protein giúp vận chuyển các chất không tan trong lipid qua màng tế bào. Chúng kiểm soát sự nhập/xuất lipid qua màng tế bào ruột và tham gia vào quá trình vận chuyển ngược cholesterol.</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><strong>ABC A1 (ATP-binding cassette transporter A1):</strong> Nằm trên bề mặt các tế bào (ví dụ: đại thực bào). Vận chuyển ngược cholesterol từ mảng xơ vữa vào HDL để đưa về gan. Sự tương tác giữa apoA1 trên HDL và ABC-A1 trên tế bào ngoại biên giúp thu nhận cholesterol. Khi HDL trở nên nhỏ và đậm đặc, apoA1 có thể tách rời, làm mất khả năng này.</li>
+                            </ul>
+                        `
+                    },
+                     {
+                        title: "Tóm tắt",
+                        icon: "📝",
+                        color: "bg-gray-100",
+                        content: `<p class="text-gray-700 ml-4">Các protein này hoạt động phối hợp với nhau để đảm bảo quá trình hấp thu, vận chuyển, chuyển hóa và thanh thải lipid trong máu diễn ra hiệu quả. Bất thường chức năng của bất kỳ loại protein nào cũng có thể dẫn đến rối loạn chuyển hóa lipid máu.</p>`
+                    }
+                ]
+            },
+            disorderTypes: {
+                name: "Các kiểu Rối loạn Lipoprotein máu",
+                intro: "Rối loạn chuyển hóa lipid máu (RLCH lipid máu) là những tình trạng bất thường trong quá trình chuyển hóa lipid, thường biểu hiện bằng nồng độ bất thường của cholesterol và/hoặc triglyceride trong các lipoprotein. Nguyên nhân có thể do gen, lối sống hoặc bệnh lý khác.",
+                details: [
+                    {
+                        title: "1. Tăng cholesterol (LDL-c cao)",
+                        icon: "📈",
+                        color: "bg-red-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Đặc trưng:</strong> Nồng độ cholesterol cao, đặc biệt là LDL-c ("mỡ xấu" - yếu tố nguy cơ tim mạch cao nhất).</li>
+                                <li><strong>Nguyên nhân:</strong> Tăng cholesterol thứ phát (lối sống) hoặc tăng cholesterol gia đình (đột biến gen mã hóa thụ thể LDL).</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "2. Tăng TG và cholesterol bình thường",
+                        icon: "⬆️",
+                        color: "bg-orange-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Biểu hiện:</strong> Tăng nồng độ triglyceride, phản ánh sự thay đổi của CM và VLDL.</li>
+                                <li><strong>Nguyên nhân:</strong> Đái tháo đường type 2, tăng TG gia đình, khiếm khuyết LPL/ApoC-II, hoặc thừa ApoC-III.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "3. Tăng đồng thời TG và cholesterol",
+                        icon: "⬆️⬆️",
+                        color: "bg-yellow-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Đặc trưng:</strong> Kết hợp tăng triglyceride và cholesterol, làm tăng nguy cơ bệnh tim mạch.</li>
+                                <li><strong>Dạng:</strong> Tăng lipid máu kết hợp dạng gia đình/mắc phải (do ĐTĐ, cao huyết áp, béo phì), Dysbetalipoproteinemia (khiếm khuyết apoE), thiếu lipase gan, khiếm khuyết cholesterol 7-alpha-hydroxylase.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "4. Giảm đồng thời TG và cholesterol",
+                        icon: "⬇️⬇️",
+                        color: "bg-blue-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Đặc trưng:</strong> Nồng độ triglyceride và cholesterol đều rất thấp (ít gặp).</li>
+                                <li><strong>Nguyên nhân:</strong> Khiếm khuyết trong tổng hợp/chuyển hóa apoB, dẫn đến giảm/không có các lipoprotein chứa apoB (CM, VLDL, LDL). Ví dụ: Hội chứng Bassen-Kornzweig, Bệnh Anderson.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "5. HDL-c thấp đơn độc",
+                        icon: "📉",
+                        color: "bg-indigo-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Đặc trưng:</strong> Nồng độ HDL-c trong máu thấp. Giảm HDL-c tương quan với tăng nguy cơ bệnh ĐMV.</li>
+                                <li><strong>Nguyên nhân:</strong> Alphalipoprotein thấp gia đình, khiếm khuyết apoA-I/apoC-III, Bệnh Tangier, khiếm khuyết LCAT.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "6. HDL-c cao đơn độc",
+                        icon: "⬆️",
+                        color: "bg-green-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Đặc trưng:</strong> Nồng độ HDL-c trong máu cao (>100 mg/dL).</li>
+                                <li><strong>Nguyên nhân:</strong> Khiếm khuyết/tổn thương gen mã hóa cho CETP, làm giảm lượng HDL-c nhỏ và chậm thanh thải HDL-c.</li>
+                            </ul>
+                        `
+                    }
+                ]
+            },
+            lipidTests: {
+                name: "Ý nghĩa các xét nghiệm Lipid máu",
+                intro: "Các xét nghiệm lipid máu cơ bản đóng vai trò quan trọng trong việc đánh giá nguy cơ và theo dõi các bệnh lý tim mạch. Dưới đây là 4 thông số cơ bản:",
+                details: [
+                    {
+                        title: "1. Cholesterol Toàn phần (Cho TP)",
+                        icon: "📊",
+                        color: "bg-gray-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Ý nghĩa:</strong> Cho TP bao gồm tổng lượng cholesterol trong các lipoprotein chính là LDL-C, HDL-C và VLDL-C. Nguồn lưu ý rằng Cholesterol Toàn phần không cộng thêm lượng cholesterol trong Chylomicron (CM) vì CM chứa lipid ngoại sinh và có tỷ lệ Triglyceride (TG) rất cao.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "2. Triglyceride (TG/máu)",
+                        icon: "💧",
+                        color: "bg-orange-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Ý nghĩa:</strong> Nồng độ TG trong máu phản ánh sự thay đổi của các lipoprotein chứa nhiều TG như Chylomicron và VLDL. Nồng độ TG nhạy cảm với hàm lượng TG trong thức ăn.</li>
+                                <li><strong>Nguy cơ:</strong> TG thường xuyên gây ra các phân tử LDL và HDL nhỏ, đậm đặc thông qua hoạt động của CETP, được coi là yếu tố nguy cơ tim mạch.</li>
+                                <li><strong>Lưu ý:</strong> Insulin và thyroxine làm tăng tổng hợp LPL và apo-CII, ảnh hưởng đến nồng độ TG/máu. TG tăng quá cao có thể gây tình trạng "đục huyết thanh", làm cản trở khả năng định lượng các chất khác bằng phương pháp đo quang.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "3. LDL-cholesterol (LDL-c/máu)",
+                        icon: "☠️",
+                        color: "bg-red-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Ý nghĩa:</strong> LDL-c chứa hàm lượng cholesterol cao nhất trong các lipoprotein. Nó được gọi là "mỡ xấu" và là yếu tố nguy cơ tim mạch cao nhất. Nồng độ tiêu chuẩn của LDL/máu thay đổi theo các yếu tố nguy cơ. LDL-c là thông số được sử dụng để quyết định việc sử dụng thuốc hạ cholesterol, không dựa vào Cholesterol Toàn phần vì Cho TP bao gồm cả HDL-c là "mỡ tốt".</li>
+                                <li><strong>Cách xác định:</strong> Có hai cách:
+                                    <ul class="list-circle list-inside ml-8 space-y-1">
+                                        <li>Định lượng trực tiếp (direct LDL-c).</li>
+                                        <li>Ước tính từ nồng độ cholesterol TP, TG và HDL-c (indirect LDL-c). Phương pháp ước tính phổ biến là sử dụng công thức Friedewald (1972) (chỉ tương quan tốt khi nồng độ TG < 400 mg/dL). Công thức của de Cordova (2013) không phụ thuộc nồng độ TG.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "4. HDL-cholesterol (HDL-c)",
+                        icon: "❤️",
+                        color: "bg-green-50",
+                        content: `
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                <li><strong>Ý nghĩa:</strong> HDL-c là một thành phần của Cholesterol Toàn phần. HDL được gọi là "Cho tốt". HDL đóng vai trò quan trọng trong cơ chế vận chuyển ngược cholesterol từ mô ngoại biên về gan.</li>
+                                <li><strong>Nguy cơ:</strong> Giảm nồng độ HDL-c tương quan với tăng nguy cơ bệnh động mạch vành. Các nguyên nhân gây giảm HDL-c có thể bao gồm khiếm khuyết apoA-I, apoC-III, bệnh Tangier hoặc khiếm khuyết enzym LCAT.</li>
+                                <li><strong>Lưu ý:</strong> HDL-c cao đơn độc (trên 100 mg/dL) có thể liên quan đến khiếm khuyết hoặc tổn thương gen mã hóa cho CETP, làm chậm sự thanh thải HDL-c khỏi tuần hoàn.</li>
+                            </ul>
+                        `
+                    }
+                ]
+            }
+        };
+
+        const app = document.getElementById('app');
+        const mainContent = document.getElementById('main-content');
+        const detailView = document.getElementById('detail-view');
+        const mainHeader = document.getElementById('main-header');
+
+        function renderMainContent() {
+            mainContent.innerHTML = `
+                <section id="lipoprotein-comparison" class="section-card p-6 cursor-pointer" data-section="lipoproteinComparison">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">1. So sánh các loại Lipoprotein máu</h2>
+                    <p class="text-gray-600">Tìm hiểu về cấu tạo, tính chất và chức năng của 4 loại lipoprotein chính: Chylomicron, VLDL, LDL, HDL.</p>
+                </section>
+
+                <section id="protein-functions" class="section-card p-6 cursor-pointer" data-section="proteinFunctions">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">2. Chức năng các protein chuyển hóa Lipoprotein máu</h2>
+                    <p class="text-gray-600">Phân tích vai trò của các enzyme, apolipoprotein, thụ thể và protein vận chuyển.</p>
+                </section>
+
+                <section id="disorder-types" class="section-card p-6 cursor-pointer" data-section="disorderTypes">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">3. Các kiểu Rối loạn Lipoprotein máu</h2>
+                    <p class="text-gray-600">Trình bày các dạng rối loạn chuyển hóa lipid dựa trên nồng độ và cơ chế liên quan.</p>
+                </section>
+
+                <section id="lipid-tests" class="section-card p-6 cursor-pointer" data-section="lipidTests">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">4. Ý nghĩa các xét nghiệm Lipid máu</h2>
+                    <p class="text-gray-600">Tìm hiểu về Cholesterol Toàn phần, Triglyceride, LDL-c và HDL-c.</p>
+                </section>
+            `;
+            document.querySelectorAll('.section-card').forEach(card => {
+                card.addEventListener('click', () => showDetailView(card.dataset.section));
+            });
+        }
+
+        function showDetailView(sectionKey) {
+            const data = appData[sectionKey];
+            mainContent.classList.add('hidden');
+            mainHeader.classList.add('hidden');
+            
+            detailView.innerHTML = `
+                <button id="back-btn" class="mb-6 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">← Quay lại</button>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">${data.name}</h2>
+                    <p class="text-gray-600 mb-6">${data.intro}</p>
+                    <div id="section-content" class="space-y-6"></div>
+                </div>
+            `;
+            detailView.classList.remove('hidden');
+            document.getElementById('back-btn').addEventListener('click', hideDetailView);
+
+            renderSectionContent(sectionKey);
+        }
+
+        function hideDetailView() {
+            detailView.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            mainHeader.classList.remove('hidden');
+        }
+
+        function renderSectionContent(sectionKey) {
+            const sectionContentDiv = document.getElementById('section-content');
+            sectionContentDiv.innerHTML = '';
+
+            const data = appData[sectionKey];
+
+            if (data.details) {
+                data.details.forEach(detailBlock => {
+                    let blockHTML = `<div class="mb-4">`;
+                    if (detailBlock.type === "table") {
+                        blockHTML += `<div class="overflow-x-auto"><table class="min-w-full"><thead><tr>`;
+                        detailBlock.headers.forEach(header => {
+                            blockHTML += `<th>${header}</th>`;
+                        });
+                        blockHTML += `</tr></thead><tbody>`;
+                        detailBlock.rows.forEach(row => {
+                            blockHTML += `<tr>`;
+                            row.forEach(cell => {
+                                blockHTML += `<td>${cell}</td>`;
+                            });
+                            blockHTML += `</tr>`;
+                        });
+                        blockHTML += `</tbody></table></div>`;
+                    } else {
+                        blockHTML += `<div class="info-card ${detailBlock.color || 'bg-gray-50'}">`;
+                        if (detailBlock.title) {
+                            blockHTML += `<h4 class="info-card-header text-gray-800"><span class="info-card-icon">${detailBlock.icon || ''}</span>${detailBlock.title}</h4>`;
+                        }
+                        blockHTML += detailBlock.content || '';
+                        blockHTML += `</div>`;
+                    }
+                    blockHTML += `</div>`;
+                    sectionContentDiv.innerHTML += blockHTML;
+                });
+            } else {
+                sectionContentDiv.innerHTML = `<p class="text-gray-600">Không có thông tin chi tiết cho mục này.</p>`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderMainContent);
+    </script>
+</body>
+</html>
+�

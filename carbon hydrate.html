@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rối loạn Chuyển hóa Carbon Hydrat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A hub-and-spoke model. The main page (hub) presents five clickable cards, each corresponding to a key objective from the "Mục tiêu hóa sinh rối loạn carbon hydrat.pdf" document. Clicking a card navigates to a detailed view (spoke) for that specific objective. This detailed view uses descriptive text, bullet points, and structured lists to present complex information clearly. This structure provides a user-driven, modular exploration path, making the dense information highly digestible and easy to navigate. -->
+    <!-- Visualization & Content Choices: The application relies on structured textual content and lists rather than charts, as the source report's information is primarily descriptive and analytical. Key points are highlighted using bold text and Unicode icons (e.g., list bullets) for visual emphasis and quick scanning. All navigation and dynamic content loading are handled by vanilla JavaScript, ensuring a smooth single-page user experience. This approach ensures fidelity to the source material's nature while enhancing its presentation and navigability. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .section-card {
+            background-color: #FFFFFF;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .detail-item strong {
+            display: inline-block;
+            min-width: 150px;
+        }
+        .icon-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app" class="container mx-auto p-4 md:p-8">
+        
+        <header id="main-header" class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Mục tiêu Hóa sinh Rối loạn Carbon Hydrat</h1>
+            <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Khám phá cơ chế điều hòa glucose, Đái tháo đường, hạ đường huyết và các xét nghiệm liên quan.</p>
+        </header>
+
+        <main id="main-content" class="space-y-8">
+            <section id="glucose-regulation" class="section-card p-6 cursor-pointer" data-section="glucoseRegulation">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">1. Cơ chế điều hòa nồng độ Glucose trong máu</h2>
+                <p class="text-gray-600">Phân tích các phản ứng sinh lý khi glucose máu giảm.</p>
+            </section>
+
+            <section id="diabetes-diagnosis" class="section-card p-6 cursor-pointer" data-section="diabetesDiagnosis">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">2. Tiêu chuẩn chẩn đoán và cơ chế bệnh sinh Đái tháo đường</h2>
+                <p class="text-gray-600">Tìm hiểu về tiêu chuẩn chẩn đoán và sự khác biệt giữa Đái tháo đường Týp 1 và Týp 2.</p>
+            </section>
+
+            <section id="diabetes-tests" class="section-card p-6 cursor-pointer" data-section="diabetesTests">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">3. Ý nghĩa các xét nghiệm liên quan trong bệnh Đái tháo đường</h2>
+                <p class="text-gray-600">Khám phá các xét nghiệm phát hiện, phân biệt type và theo dõi điều trị Đái tháo đường.</p>
+            </section>
+
+            <section id="clinical-situations" class="section-card p-6 cursor-pointer" data-section="clinicalSituations">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">4. Biện luận kết quả một số tình huống lâm sàng Đái tháo đường</h2>
+                <p class="text-gray-600">Cách tiếp cận biện luận chẩn đoán, phân loại và đánh giá biến chứng.</p>
+            </section>
+
+            <section id="hypoglycemia" class="section-card p-6 cursor-pointer" data-section="hypoglycemia">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">5. Phân loại và cơ chế bệnh của tình trạng Hạ đường huyết</h2>
+                <p class="text-gray-600">Tìm hiểu về định nghĩa, đáp ứng sinh lý và các loại hạ glucose máu.</p>
+            </section>
+
+            <section id="congenital-disorders" class="section-card p-6 cursor-pointer" data-section="congenitalDisorders">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">6. Các nhóm bệnh chuyển hóa Carbon Hydrat bẩm sinh</h2>
+                <p class="text-gray-600">Thông tin tổng quan về các bệnh lý bẩm sinh được đề cập trong tài liệu.</p>
+            </section>
+        </main>
+
+        <section id="detail-view" class="hidden">
+        </section>
+
+    </div>
+
+    <script>
+        const appData = {
+            glucoseRegulation: {
+                name: "Cơ chế điều hòa nồng độ Glucose trong máu",
+                intro: "Cơ thể có nhiều phản ứng sinh lý để điều hòa nồng độ glucose trong máu, đặc biệt khi glucose máu giảm xuống dưới mức báo động.",
+                details: [
+                    {
+                        title: "1. Đáp ứng nhanh",
+                        content: `
+                            <div class="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
+                                <div class="bg-blue-50 p-4 rounded-lg flex-1">
+                                    <div class="icon-text text-blue-700 font-semibold mb-2 text-lg">
+                                        <span class="text-2xl">🧪</span> Hormone tuyến tụy
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li>Glucose máu thấp: Insulin <span class="text-red-500">↓</span> Glucagon <span class="text-green-500">↑</span></li>
+                                        <li>Insulin: Giảm glucose máu.</li>
+                                        <li>Glucagon: Tăng glucose máu.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-purple-50 p-4 rounded-lg flex-1">
+                                    <div class="icon-text text-purple-700 font-semibold mb-2 text-lg">
+                                        <span class="text-2xl">⚡</span> Hệ giao cảm & Tuyến thượng thận
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li>Tăng tiết Catecholamin, Norepinephrine, Acetylcholine.</li>
+                                        <li>Gây triệu chứng: Run, hồi hộp, bứt rứt, toát mồ hôi, cảm giác đói, dị cảm.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Đáp ứng khi glucose máu tiếp tục giảm",
+                        content: `
+                            <div class="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
+                                <div class="bg-red-50 p-4 rounded-lg flex-1">
+                                    <div class="icon-text text-red-700 font-semibold mb-2 text-lg">
+                                        <span class="text-2xl">🧠</span> Hệ thần kinh trung ương
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li>Chức năng tế bào giảm sút.</li>
+                                        <li>Triệu chứng: Chóng mặt, mờ mắt, khó tập trung, lẫn lộn, thay đổi hành vi, động kinh, hôn mê, chết não.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg flex-1">
+                                    <div class="icon-text text-gray-700 font-semibold mb-2 text-lg">
+                                        <span class="text-2xl">⚖️</span> Hormone khác
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li>GH (Growth Hormone) và Cortisol: Có thể tham gia vào đáp ứng chậm (còn tranh cãi).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            diabetesDiagnosis: {
+                name: "Tiêu chuẩn chẩn đoán và cơ chế bệnh sinh Đái tháo đường",
+                intro: "Đái tháo đường là một nhóm bệnh chuyển hóa đặc trưng bởi tình trạng tăng glucose máu. Chẩn đoán và cơ chế bệnh sinh có sự khác biệt rõ rệt giữa các type.",
+                details: [
+                    {
+                        title: "1. Tiêu chuẩn chẩn đoán Đái tháo đường (theo ADA 2020)",
+                        content: `
+                            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                                <div class="icon-text text-green-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">✅</span> Điều kiện chẩn đoán
+                                </div>
+                                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                    <li><strong>Glucose máu đói (G máu đói):</strong> ≥ 7,0 mmol/L (126 mg/dL). (Nhịn ăn ≥ 08 giờ).</li>
+                                    <li><strong>Glucose máu bất kỳ (G máu bất kỳ):</strong> ≥ 11,1 mmol/L (200 mg/dL) + triệu chứng lâm sàng điển hình (ăn nhiều, uống nhiều, tiểu nhiều, sụt cân).</li>
+                                    <li><strong>Glucose máu 2 giờ sau NP dung nạp glucose đường uống:</strong> ≥ 11,1 mmol/L (200 mg/dL). (Sau khi uống 75g glucose).</li>
+                                    <li><strong>HbA1c:</strong> ≥ 6,5%.</li>
+                                    <li><em>Lưu ý:</em> Cần xác định chẩn đoán ở lần thứ hai vào ngày khác (trừ G máu bất kỳ có triệu chứng).</li>
+                                </ul>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <div class="icon-text text-yellow-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">⚠️</span> Các trạng thái liên quan (Tiền ĐTĐ)
+                                </div>
+                                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                    <li>Rối loạn dung nạp glucose (IGT).</li>
+                                    <li>Rối loạn glucose đói (IFG).</li>
+                                    <li>HbA1c từ 5,7-6,4%.</li>
+                                    <li>Đái tháo đường thai kỳ (GDM).</li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Cơ chế bệnh sinh Đái tháo đường",
+                        content: `
+                            <p class="text-gray-700 mb-4 ml-4">Tăng glucose máu trong ĐTĐ là hội chứng rối loạn chuyển hóa do thiếu insulin tuyệt đối hoặc đề kháng insulin.</p>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-red-50 p-4 rounded-lg">
+                                    <h5 class="font-bold text-red-700 text-lg mb-2 icon-text"><span class="text-2xl">💔</span> 2.1. Đái tháo đường Týp 1:</h5>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li><strong>Đặc trưng:</strong> Phá hủy tế bào β tuyến tụy → thiếu insulin hoàn toàn.</li>
+                                        <li><strong>Týp 1a (tự miễn):</strong> Phổ biến, có tự kháng thể (ICA, IAA, GADA...).</li>
+                                        <li><strong>Týp 1b (vô căn):</strong> Hiếm, di truyền mạnh.</li>
+                                        <li><strong>Insulin/C-peptid:</strong> Rất thấp hoặc không có.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h5 class="font-bold text-blue-700 text-lg mb-2 icon-text"><span class="text-2xl">⚙️</span> 2.2. Đái tháo đường Týp 2:</h5>
+                                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                        <li><strong>Đặc trưng:</strong> Đề kháng insulin + rối loạn tiết insulin. Thường lớn tuổi, béo phì.</li>
+                                        <li><strong>Đề kháng insulin:</strong> Giảm đáp ứng sinh học với insulin (do di truyền, thuốc, béo phì...).</li>
+                                        <li><strong>Khiếm khuyết tiết insulin:</strong> Rối loạn chức năng tế bào β tụy (ban đầu tăng bù trừ, sau đó giảm dần).</li>
+                                        <li><strong>Insulin/C-peptid:</strong> Rất thay đổi (ban đầu cao, sau đó giảm).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            diabetesTests: {
+                name: "Ý nghĩa các xét nghiệm liên quan trong bệnh Đái tháo đường",
+                intro: "Các xét nghiệm trong Đái tháo đường được phân loại theo mục đích: phát hiện/xác định bệnh, phân biệt type và theo dõi điều trị.",
+                details: [
+                    {
+                        title: "1. Các xét nghiệm phát hiện, xác định bệnh ĐTĐ",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">💧</span> <strong>Glucose niệu (G niệu):</strong> Xuất hiện khi glucose máu vượt ngưỡng thận (180 mg/dL). Vai trò giảm dần.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🩸</span> <strong>Glucose máu ngẫu nhiên:</strong> ≥ 11,1 mmol/L (200 mg/dL) + triệu chứng điển hình → chỉ điểm ĐTĐ.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🍽️</span> <strong>Glucose máu khi đói:</strong> ≥ 7,0 mmol/L (126 mg/dL) là tiêu chuẩn chẩn đoán (nhịn ăn ≥ 08 giờ).
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🕒</span> <strong>Glucose máu sau ăn 2 giờ:</strong> ≥ 11,1 mmol/L (200 mg/dL) sau ăn/NP dung nạp glucose.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🧪</span> <strong>Nghiệm pháp dung nạp đường huyết đường uống (OGTT):</strong> Khẳng định chẩn đoán. Uống 75g glucose, định lượng G máu tại 120 phút.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">💉</span> <strong>Nghiệm pháp tăng glucose đường tĩnh mạch:</strong> Không có mô tả chi tiết trong nguồn.
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Các xét nghiệm phân biệt ĐTĐ type 1 và type 2",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">📉</span> <strong>Định lượng Insulin huyết tương:</strong> Rất thấp/không có (Týp 1); Rất thay đổi (Týp 2).
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🔬</span> <strong>Định lượng Peptid C:</strong> Tương đương insulin nội sinh. Rất thấp/không có (Týp 1); Bình thường/giảm ít (Týp 2).
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🛡️</span> <strong>Các xét nghiệm tìm tự kháng thể:</strong> Dương tính (Týp 1a); Âm tính (Týp 2).
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "3. Các xét nghiệm theo dõi điều trị ĐTĐ",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-green-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">📊</span> <strong>Glycohemoglobin (%HbA1C):</strong> Phản ánh G máu trung bình 2-3 tháng trước. ≥ 6,5% chẩn đoán, < 7% đáp ứng tốt.
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">📅</span> <strong>Fructosamin:</strong> Phản ánh kiểm soát G máu 2-3 tuần trước. Dùng khi HbA1C không chính xác.
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">肾</span> <strong>Microalbumin niệu:</strong> Dấu hiệu sớm bệnh thận do ĐTĐ. Giúp chẩn đoán biến chứng thận sớm.
+                                </div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            clinicalSituations: {
+                name: "Biện luận kết quả một số tình huống lâm sàng bệnh Đái tháo đường",
+                intro: "Biện luận lâm sàng Đái tháo đường đòi hỏi tổng hợp thông tin từ tiêu chuẩn chẩn đoán, cơ chế bệnh sinh và ý nghĩa xét nghiệm.",
+                details: [
+                    {
+                        title: "1. Biện luận chẩn đoán Đái tháo đường",
+                        content: `
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <div class="icon-text text-blue-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">📝</span> Xác định chẩn đoán
+                                </div>
+                                <p class="text-gray-700 ml-4">Dựa trên G máu đói, G máu bất kỳ có triệu chứng, G máu 2 giờ sau NP dung nạp glucose hoặc HbA1c. Nếu không đủ tiêu chuẩn nhưng cao hơn bình thường, biện luận là Tiền Đái tháo đường.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Biện luận phân loại thể Đái tháo đường (Týp 1 vs Týp 2)",
+                        content: `
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <div class="icon-text text-purple-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">⚖️</span> Đặc điểm phân biệt
+                                </div>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                    <li><strong>Tuổi khởi phát:</strong> < 40 (Týp 1) vs > 40 (Týp 2).</li>
+                                    <li><strong>Cân nặng:</strong> Không béo phì (Týp 1) vs Béo phì/thừa cân (Týp 2).</li>
+                                    <li><strong>Khởi bệnh:</strong> Rầm rộ (Týp 1) vs Kín đáo (Týp 2).</li>
+                                    <li><strong>Triệu chứng:</strong> Rõ rệt hơn ở Týp 1.</li>
+                                    <li><strong>Phụ thuộc insulin:</strong> Có (Týp 1) vs Không (Týp 2).</li>
+                                    <li><strong>Toan Ceton:</strong> Thường có (Týp 1); ít gặp (Týp 2).</li>
+                                    <li><strong>Insulin/C-peptid:</strong> Rất thấp/không có (Týp 1); bình thường/giảm ít (Týp 2).</li>
+                                    <li><strong>Nồng độ Glucagon:</strong> Tăng (Týp 1); bình thường (Týp 2).</li>
+                                    <li><strong>Tự kháng thể:</strong> Dương tính (Týp 1a); âm tính (Týp 2).</li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "3. Biện luận đánh giá tình trạng kiểm soát và biến chứng",
+                        content: `
+                            <div class="bg-orange-50 p-4 rounded-lg">
+                                <div class="icon-text text-orange-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">📈</span> Kiểm soát & Biến chứng
+                                </div>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                                    <li><strong>Kiểm soát đường huyết trung bình dài hạn:</strong> HbA1c (< 7% là mục tiêu). Fructosamin (2-3 tuần gần đây).</li>
+                                    <li><strong>Biến chứng thận:</strong> Microalbumin niệu (dấu hiệu sớm).</li>
+                                    <li><strong>Biến chứng cấp tính:</strong>
+                                        <ul class="list-circle list-inside ml-8 space-y-1">
+                                            <li>Hôn mê nhiễm ceton máu: G máu ↑, Ceton máu/niệu ↑, pH máu ↓.</li>
+                                            <li>Hôn mê tăng áp suất thẩm thấu: G máu ↑, G niệu (++), ASTT máu ↑, rối loạn tri giác.</li>
+                                            <li>Hôn mê tăng acid lactic: G máu ↑, G niệu (++), Lactat máu ↑, pH máu ↓.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "4. Biện luận tình trạng Hạ glucose máu",
+                        content: `
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <div class="icon-text text-yellow-700 font-semibold mb-2 text-lg">
+                                    <span class="text-2xl">📉</span> Hạ glucose máu
+                                </div>
+                                <p class="text-gray-700 ml-4"><strong>Định nghĩa:</strong> G máu thấp hơn mức báo động (≤ 55 mg/dL).</p>
+                                <p class="text-gray-700 ml-4"><strong>Biểu hiện:</strong> Triệu chứng thần kinh giao cảm (run, hồi hộp) và/hoặc thần kinh trung ương (chóng mặt, hôn mê).</p>
+                                <p class="text-gray-700 ml-4 font-semibold mt-2">Biện luận nguyên nhân:</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-8">
+                                    <li><strong>Hạ G máu khi đói:</strong> Luôn bệnh lý. (Tăng insulin, giảm hormone đối kháng, bệnh gan, thiếu cơ chất).</li>
+                                    <li><strong>Hạ G máu phản ứng:</strong> Trong 4 giờ sau ăn. (Phóng thích quá nhiều insulin).</li>
+                                    <li><strong>Hạ G máu do kích thích:</strong> Liên quan thuốc (quá liều), rượu.</li>
+                                </ul>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            hypoglycemia: {
+                name: "Phân loại và cơ chế bệnh của tình trạng Hạ đường huyết",
+                intro: "Hạ glucose máu là tình trạng khi tốc độ sử dụng glucose của các mô lớn hơn tốc độ cung ứng glucose.",
+                details: [
+                    {
+                        title: "1. Định nghĩa và ngưỡng",
+                        content: `
+                            <div class="bg-blue-50 p-3 rounded-lg icon-text">
+                                <span class="text-2xl">📍</span> Hạ glucose máu: Tốc độ sử dụng glucose của các mô > tốc độ cung ứng.
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-lg icon-text mt-2">
+                                <span class="text-2xl">📏</span> Ngưỡng giới hạn: ≤ 55 mg/dL (3.0 mmol/L) ở người lớn khỏe mạnh. ≤ 50 mg/dL (2.8 mmol/L) ở trẻ em.
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Đáp ứng sinh lý với hạ glucose máu",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-green-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">⚡</span> Đáp ứng nhanh: Insulin ↓, Glucagon ↑.
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">💪</span> Đáp ứng giao cảm & thượng thận: Tăng tiết catecholamin, norepinephrine, acetylcholine. Gây triệu chứng run, hồi hộp, toát mồ hôi.
+                                </div>
+                                <div class="bg-red-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🧠</span> Giảm chức năng TKTW: Khi glucose quá thấp, gây chóng mặt, lẫn lộn, hôn mê.
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "3. Phân loại tình trạng hạ glucose máu",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-purple-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">⏰</span> Hạ glucose máu khi đói (fasting hypoglycemia).
+                                </div>
+                                <div class="bg-purple-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🍽️</span> Hạ glucose máu phản ứng (reactive/postprandial hypoglycemia) hoặc sau ăn.
+                                </div>
+                                <div class="bg-purple-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">💊</span> Hạ glucose máu do kích thích (induced hypoglycemia).
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "4. Cơ chế bệnh của từng loại hạ glucose máu",
+                        content: `
+                            <h5 class="font-bold text-base mb-1 mt-3 ml-4 icon-text"><span class="text-xl">⏰</span> 4.1. Hạ glucose máu khi đói:</h5>
+                            <p class="text-gray-700 mb-2 ml-8">Luôn là tình trạng bệnh lý. Cơ chế:</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-12">
+                                <li>Tăng bài tiết insulin (u tụy, tăng sinh tế bào beta).</li>
+                                <li>Giảm các hormon đối kháng insulin (suy tuyến yên, bệnh Addison).</li>
+                                <li>Bệnh của gan (ứ glycogen, thiếu enzyme tân tạo glucose bẩm sinh).</li>
+                                <li>Thiếu hụt cơ chất tân tạo glucose (suy dinh dưỡng).</li>
+                            </ul>
+                            <h5 class="font-bold text-base mb-1 mt-3 ml-4 icon-text"><span class="text-xl">🍽️</span> 4.2. Hạ glucose máu phản ứng / sau ăn:</h5>
+                            <p class="text-gray-700 mb-2 ml-8">Xảy ra trong vòng 4 giờ sau ăn. Thường nhẹ.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-12">
+                                <li>Phóng thích quá nhiều insulin sau bữa ăn giàu carbohydrat.</li>
+                            </ul>
+                            <h5 class="font-bold text-base mb-1 mt-3 ml-4 icon-text"><span class="text-xl">💊</span> 4.3. Hạ glucose máu do kích thích:</h5>
+                            <p class="text-gray-700 mb-2 ml-8">Liên quan đến việc sử dụng một số chất. Cơ chế:</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-12">
+                                <li>Do alcohol (ức chế giải phóng glucose từ gan).</li>
+                                <li>Sử dụng thuốc gây hạ glucose máu quá liều.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "5. Các xét nghiệm đánh giá hạ glucose máu",
+                        content: `
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🧪</span> Định lượng glucose huyết tương khi đói.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🔬</span> Định lượng insulin huyết tương khi đói.
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg icon-text">
+                                    <span class="text-2xl">🧬</span> Định lượng peptid C khi đói.
+                                </div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            congenitalDisorders: {
+                name: "Các nhóm bệnh chuyển hóa Carbon Hydrat bẩm sinh",
+                intro: "Dựa trên tài liệu, thông tin về các nhóm bệnh chuyển hóa carbon hydrat bẩm sinh không được trình bày đầy đủ và có hệ thống. Tuy nhiên, một số ví dụ cụ thể được đề cập.",
+                details: [
+                    {
+                        title: "1. Các bệnh của gan",
+                        content: `
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><span class="icon-text text-gray-700"><span class="text-2xl">肝</span> <strong>Bệnh ứ glycogen:</strong> Một số bệnh lý gây tích lũy glycogen bất thường.</span></li>
+                                <li><span class="icon-text text-gray-700"><span class="text-2xl">🧬</span> <strong>Thiếu hụt enzyme tân tạo glucose bẩm sinh:</strong> Rối loạn khả năng tạo ra glucose, gây hạ glucose máu.</span></li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "2. Khía cạnh di truyền của Đái tháo đường",
+                        content: `
+                            <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                                <li><span class="icon-text text-gray-700"><span class="text-2xl">👪</span> Tài liệu đề cập tính di truyền trong Đái tháo đường Týp 1 và yếu tố di truyền là nguyên nhân gây đề kháng insulin trong Đái tháo đường Týp 2.</span></li>
+                                <li><em>Lưu ý:</em> Đây là khía cạnh di truyền của ĐTĐ, không phải là phân loại các nhóm bệnh chuyển hóa carbon hydrat bẩm sinh theo nghĩa rộng (như các bệnh lý dự trữ glycogen, chuyển hóa galactose, fructose...).</li>
+                            </ul>
+                        `
+                    }
+                ]
+            }
+        };
+
+        const app = document.getElementById('app');
+        const mainContent = document.getElementById('main-content');
+        const detailView = document.getElementById('detail-view');
+        const mainHeader = document.getElementById('main-header');
+
+        function renderMainContent() {
+            mainContent.innerHTML = `
+                <section id="glucose-regulation" class="section-card p-6 cursor-pointer" data-section="glucoseRegulation">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">1. Cơ chế điều hòa nồng độ Glucose trong máu</h2>
+                    <p class="text-gray-600">Phân tích các phản ứng sinh lý khi glucose máu giảm.</p>
+                </section>
+
+                <section id="diabetes-diagnosis" class="section-card p-6 cursor-pointer" data-section="diabetesDiagnosis">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">2. Tiêu chuẩn chẩn đoán và cơ chế bệnh sinh Đái tháo đường</h2>
+                    <p class="text-gray-600">Tìm hiểu về tiêu chuẩn chẩn đoán và sự khác biệt giữa Đái tháo đường Týp 1 và Týp 2.</p>
+                </section>
+
+                <section id="diabetes-tests" class="section-card p-6 cursor-pointer" data-section="diabetesTests">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">3. Ý nghĩa các xét nghiệm liên quan trong bệnh Đái tháo đường</h2>
+                    <p class="text-gray-600">Khám phá các xét nghiệm phát hiện, phân biệt type và theo dõi điều trị Đái tháo đường.</p>
+                </section>
+
+                <section id="clinical-situations" class="section-card p-6 cursor-pointer" data-section="clinicalSituations">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">4. Biện luận kết quả một số tình huống lâm sàng Đái tháo đường</h2>
+                    <p class="text-gray-600">Cách tiếp cận biện luận chẩn đoán, phân loại và đánh giá biến chứng.</p>
+                </section>
+
+                <section id="hypoglycemia" class="section-card p-6 cursor-pointer" data-section="hypoglycemia">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">5. Phân loại và cơ chế bệnh của tình trạng Hạ đường huyết</h2>
+                    <p class="text-gray-600">Tìm hiểu về định nghĩa, đáp ứng sinh lý và các loại hạ glucose máu.</p>
+                </section>
+
+                <section id="congenital-disorders" class="section-card p-6 cursor-pointer" data-section="congenitalDisorders">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">6. Các nhóm bệnh chuyển hóa Carbon Hydrat bẩm sinh</h2>
+                    <p class="text-gray-600">Thông tin tổng quan về các bệnh lý bẩm sinh được đề cập trong tài liệu.</p>
+                </section>
+            `;
+            document.querySelectorAll('.section-card').forEach(card => {
+                card.addEventListener('click', () => showDetailView(card.dataset.section));
+            });
+        }
+
+        function showDetailView(sectionKey) {
+            const data = appData[sectionKey];
+            mainContent.classList.add('hidden');
+            mainHeader.classList.add('hidden');
+            
+            detailView.innerHTML = `
+                <button id="back-btn" class="mb-6 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">← Quay lại</button>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">${data.name}</h2>
+                    <p class="text-gray-600 mb-6">${data.intro}</p>
+                    <div id="section-content" class="space-y-6"></div>
+                </div>
+            `;
+            detailView.classList.remove('hidden');
+            document.getElementById('back-btn').addEventListener('click', hideDetailView);
+
+            renderSectionContent(sectionKey);
+        }
+
+        function hideDetailView() {
+            detailView.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            mainHeader.classList.remove('hidden');
+        }
+
+        function renderSectionContent(sectionKey) {
+            const sectionContentDiv = document.getElementById('section-content');
+            sectionContentDiv.innerHTML = '';
+
+            const data = appData[sectionKey];
+
+            if (data.details) {
+                data.details.forEach(detailBlock => {
+                    let blockHTML = `<div class="mb-4">`;
+                    if (detailBlock.title) {
+                        blockHTML += `<h4 class="font-semibold text-xl mb-2 text-gray-800">${detailBlock.title}</h4>`;
+                    }
+                    blockHTML += detailBlock.content || '';
+                    blockHTML += `</div>`;
+                    sectionContentDiv.innerHTML += blockHTML;
+                });
+            } else {
+                sectionContentDiv.innerHTML = `<p class="text-gray-600">Không có thông tin chi tiết cho mục này.</p>`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderMainContent);
+    </script>
+</body>
+</html>
